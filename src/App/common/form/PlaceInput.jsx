@@ -1,55 +1,52 @@
-import React from 'react'
-import PlacesAutocomplete from  'react-places-autocomplete'
-import { Form , Label, Segment, List} from 'semantic-ui-react';
+import React, { Component } from 'react'
+import { Form, Label } from 'semantic-ui-react'
+import Script from 'react-load-script'
+import PlacesAutocomplete from 'react-places-autocomplete'
 
-const PlaceInput = ({
-    input: {
-        value,
-        onChange,
-        onBlur
-    },
-    width,
-    onSelect,
-    options,
-    placeholder,
-    meta: {
-        touched,
-        error
-    }  
-}) => {
+const styles = {
+  autocompleteContainer: {
+    zIndex: 1000
+  }
+}
+
+class PlaceInput extends Component {
+  state = {
+    scriptLoaded: false
+  }
+
+  handleScriptLoaded = () => this.setState({ scriptLoaded: true })
+
+  render() {
+    const {
+      input,
+      width,
+      onSelect,
+      placeholder,
+      options,
+      meta: { touched, error }
+    } = this.props
     return (
-        <PlacesAutocomplete
-        value={value}
-        onChange={onChange}
-        onSelect={onSelect}
-        searchOptions={options}
-        >
-            {({getInputProps, suggestions, getSuggestionInputProps, loading}) => (
-                <Form.Field error={touched && !!error}>
-                    <input placeholder={placeholder} {...getInputProps({placeholder, onBlur})} />
-                     {touched && error && <Label basic color="red">{error}</Label>}
-                     {suggestions.length > 0 && (
-                         <Segment>
-                             {loading && <div>...Loading </div>}
-                             <List selection>
-                                 {console.log(suggestions)}
-                                {suggestions.map(suggestion => (
-                                    <List.Item {...getSuggestionInputProps}>
-                                        <List.Header>
-                                            {suggestion.formattedSuggestion.mainText}
-                                        </List.Header>
-                                        <List.Description>
-                                            {suggestion.formattedSuggestion.secondaryText}
-                                        </List.Description>
-                                    </List.Item>
-                                ))}
-                             </List>
-                         </Segment>
-                     )}
-                </Form.Field>
-            )}
-        </PlacesAutocomplete>
+      <Form.Field error={touched && !!error} width={width}>
+        <Script
+          url='https://maps.googleapis.com/maps/api/js?key=AIzaSyDUX8SIqI2_TkxTUFkNQeqIyO4urAqgrt0&libraries=places'
+          onLoad={this.handleScriptLoaded}
+        />
+        {this.state.scriptLoaded && (
+          <PlacesAutocomplete
+            inputProps={{ ...input, placeholder }}
+            options={options}
+            onSelect={onSelect}
+            styles={styles}
+          />
+        )}
+        {touched && error && (
+          <Label basic color='red'>
+            {error}
+          </Label>
+        )}
+      </Form.Field>
     )
+  }
 }
 
 export default PlaceInput
